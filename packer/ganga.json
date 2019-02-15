@@ -1,0 +1,24 @@
+{
+  "variables": {
+    "aws_profile": "grayudu"
+  },
+  "builders": [{
+    "type": "amazon-ebs",
+    "profile": "grayudu",
+    "region": "us-west-2",   
+    "source_ami": "ami-032509850cf9ee54e",
+    "instance_type": "t2.micro",
+    "ssh_username": "ec2-user",
+    "ami_name": "ganga-ami"  
+  }],
+  	"provisioners": [{
+        "type": "shell",
+        "scripts": [
+      			"/Users/grayudu/perso/packer/ganga_bootstrap.sh"
+    		],
+    		"execute_command": "{{ .Vars }} sudo -E sh '{{ .Path }}'",
+    		"pause_before": "10s"
+        
+  	}
+    ]
+}
