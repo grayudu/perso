@@ -1,0 +1,10 @@
+[
+  {
+    "ParameterKey": "KeyName",
+    "ParameterValue": "ganga_uswest2"
+  },
+  {
+    "ParameterKey": "InstanceType",
+    "ParameterValue": "t2.micro"
+  }
+]
