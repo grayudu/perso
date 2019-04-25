@@ -28,6 +28,7 @@ data "aws_security_group" "default" {
 
 data "aws_ami" "amazon_linux" {
   most_recent = true
+  owners      = ["amazon"]
 
   filter {
     name = "name"
@@ -46,6 +47,15 @@ data "aws_ami" "amazon_linux" {
   }
 }
 
+module "sg" {
+  source = "../modules/sg"
+
+  name        = "${var.name}"
+  desc        = "${var.desc}"
+  aws_vpc_id  = "${data.aws_vpc.default.id}"
+  cidr_blocks = ["0.0.0.0/0"]
+}
+
 ######
 # Launch configuration and autoscaling group
 ######
@@ -62,9 +72,18 @@ module "ganga" {
 
   image_id                     = "${data.aws_ami.amazon_linux.id}"
   instance_type                = "t2.micro"
-  security_groups              = ["${data.aws_security_group.default.id}"]
+  security_groups              = ["${module.sg.this_sg_id}"]
+  load_balancers               = ["${module.ganga-elb.this_elb_id}"]
   associate_public_ip_address  = true
   recreate_asg_when_lc_changes = true
+  key_name                     = "ganga_uswest2"
+
+  user_data = <<-EOF
+              #!/bin/bash
+              yum install -y docker
+              service docker start
+              docker run -d -p 80:80 nginx:latest
+              EOF
 
   ebs_block_device = [
     {
@@ -89,7 +108,7 @@ module "ganga" {
   health_check_type         = "EC2"
   min_size                  = 1
   max_size                  = 1
-  desired_capacity          = 0
+  desired_capacity          = 1
   wait_for_capacity_timeout = 0
 
   tags = [
@@ -110,3 +129,21 @@ module "ganga" {
     extra_tag2 = "extra_value2"
   }
 }
+
+module "ganga-elb" {
+  source          = "../modules/elb"
+  name            = "ganga-elb"
+  security_groups = ["${module.sg.this_sg_id}"]
+  subnets         = ["${data.aws_subnet_ids.all.ids}"]
+  internal        = "false"
+
+  listener = "${var.listener}"
+
+  health_check = "${var.health_check}"
+}
+
+# resource "aws_autoscaling_attachment" "asg_attachment_bar" {
+#   autoscaling_group_name = "${module.ganga}"
+#   elb                    = "${module.ganga-elb}"
+# }
+
