@@ -76,7 +76,7 @@ module "ganga" {
   load_balancers               = ["${module.ganga-elb.this_elb_id}"]
   associate_public_ip_address  = true
   recreate_asg_when_lc_changes = true
-  key_name                     = "ganga_uswest2"
+  key_name                     = "${var.key_name}"
 
   user_data = <<-EOF
               #!/bin/bash
@@ -106,20 +106,20 @@ module "ganga" {
   asg_name                  = "ganga-asg"
   vpc_zone_identifier       = ["${data.aws_subnet_ids.all.ids}"]
   health_check_type         = "EC2"
-  min_size                  = 1
-  max_size                  = 1
-  desired_capacity          = 1
+  min_size                  = "${var.min_size}"
+  max_size                  = "${var.max_size}"
+  desired_capacity          = "${var.desired_capacity}"
   wait_for_capacity_timeout = 0
 
   tags = [
     {
       key                 = "Environment"
-      value               = "dev"
+      value               = "${var.env}"
       propagate_at_launch = true
     },
     {
       key                 = "Project"
-      value               = "megasecret"
+      value               = "${var.appName}"
       propagate_at_launch = true
     },
   ]
