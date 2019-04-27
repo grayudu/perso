@@ -1,5 +1,5 @@
 provider "aws" {
-  region  = "${var.key_name}"
+  region  = "${var.region}"
   profile = "grayudu"
 
   # Make it faster by skipping something
