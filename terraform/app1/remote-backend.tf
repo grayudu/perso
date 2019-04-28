@@ -1,8 +1,9 @@
 terraform {
   backend "s3" {
-    bucket         = "${var.bucket}" # change it to the name of the name of your bucket
-    key            = "${var.env}"
-    region         = "${var.region}"
-    dynamodb_table = "${var.dynamodb_table}"
+    bucket         = "terraform-statelock-store-useast" # change it to the name of the name of your bucket
+    key            = "dev"
+    region         = "us-east-1"
+    profile        = "grayudu"
+    dynamodb_table = "terraform-statelock-useast"
   }
 }
