@@ -1,3 +1,14 @@
+#terraform lock
+variable "bucket" {
+  type        = "string"
+  description = "describe your variable"
+  default     = "terraform-statelock-store-useast"
+}
+variable "dynamodb_table" {
+  type        = "string"
+  description = "describe your variable"
+  default     = "terraform-statelock-useast"
+}
 #Region
 variable "region" {
   type        = "string"
