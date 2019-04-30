@@ -1,0 +1,27 @@
+kubectl run --generator=run-pod/v1 nginx --image=nginx
+
+kubectl run --generator=run-pod/v1 nginx --image=nginx --dry-run -o yaml
+
+kubectl run --generator=deployment/v1beta1 nginx --image=nginx
+
+kubectl run --generator=deployment/v1beta1 nginx --image=nginx --dry-run -o yaml
+
+kubectl run --generator=deployment/v1beta1 nginx --image=nginx --dry-run --replicas=4 -o yaml
+
+kubectl run --generator=deployment/v1beta1 nginx --image=nginx --dry-run --replicas=4 -o yaml > nginx-deployment.yaml
+
+db-service.dev.svc.cluster.local
+
+db-service - Service Name
+dev - namespace
+svc - service (sub-domain)
+cluster.local - domain name - default 
+
+kubectl get pods --namespace=kube-system
+
+
+kubectl config set-context $(kubectl config current-context) --name-space=dev
+
+kubectl get pods (get from dev name space)
+
+kubectl get pods --all-namespaces

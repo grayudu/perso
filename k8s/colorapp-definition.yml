@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name : colorapp-deployment
+  labels:
+    app: colorapp
+    type: frontend
+spec:
+  template:
+    metadata:
+      name: colorapp-pod
+      labels:
+        app: colorapp
+        type: frontend
+    spec:
+      containers:
+      - name: colorapp-container
+        image: grayudu/colorapp:v1
+#        envFrom:
+#          - configMapRef:
+#              name: colorapp-config
+  replicas: 2
+  selector:
+    matchLabels:
+      type: frontend
