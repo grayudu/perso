@@ -56,6 +56,12 @@ module "sg" {
   cidr_blocks = ["0.0.0.0/0"]
 }
 
+module "iam" {
+  source = "../modules/iam"
+
+  name        = "${var.name}"
+}
+
 ######
 # Launch configuration and autoscaling group
 ######
@@ -72,6 +78,7 @@ module "ganga" {
 
   image_id                     = "${data.aws_ami.amazon_linux.id}"
   instance_type                = "t2.micro"
+  iam_instance_profile         = "${module.iam.this_iam_instance_profile_id}"
   security_groups              = ["${module.sg.this_sg_id}"]
   load_balancers               = ["${module.ganga-elb.this_elb_id}"]
   associate_public_ip_address  = true
