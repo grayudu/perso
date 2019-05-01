@@ -10,7 +10,7 @@ do
 		echo "......"
                 sleep 10
                 n=$(( n+1 ))
-                if [ $n -gt 4 ]; then
+                if [ $n -gt 10 ]; then
                     echo "SmokeTest failed"
                     break;
                 fi
