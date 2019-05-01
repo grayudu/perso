@@ -44,9 +44,8 @@ pipeline {
           steps {
               dir('terraform/app1'){
                   sh "terraform output -json | jq -r .this_elb_dns_name.value > /tmp/endpoint"
-                  sh '''
-                     while true;do i=`cat /tmp/endpoint`;status=`curl -s -o /dev/null -w  "%{http_code}" http://$i`;if [ $status -eq 200 ]; then echo "Smoke Successfull";break;else echo "......";fi;done
-                     '''
+                  sh 'chmod +x smoketest.sh'
+                  sh "./smoketest.sh"
               }
           }
       }
