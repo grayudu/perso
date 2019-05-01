@@ -21,7 +21,6 @@ pipeline {
             dir('terraform/app1'){
                 //sh 'unlink variables.tf'
                 sh 'ln -s $environment variables.tf'
-                sh "sed -e 's/_key_/$environment/g' remote-backend.tf > remote-backend.tf"
                 sh 'terraform init'
                 sh 'terraform plan'
             }  
