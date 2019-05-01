@@ -1,10 +1,10 @@
 terraform {
   backend "s3" {
-    bucket         = "terraform-statelock-store-useast" # change it to the name of the name of your bucket
+    bucket         = "terraform-statelock-store-uswest" # change it to the name of the name of your bucket
     key            = "dev"
-    region         = "us-east-1"
+    region         = "us-west-2"
     profile        = "grayudu"
-    dynamodb_table = "terraform-statelock-useast"
+    dynamodb_table = "terraform-statelock-uswest"
   }
 }
 
