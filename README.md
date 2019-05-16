@@ -7,8 +7,7 @@
 * deveoped using terraforms, chef-solo
 * AWS KMS used for pushing secrets to cloud.
 
-
-##Step 1
+- Step 1
 ```hcl
 cd terraform/otc
 terraform init
