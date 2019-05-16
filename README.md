@@ -26,7 +26,10 @@ terraform apply #say yes when all resources listing correctly
 ```
 - aws --profile <profile> s3 cp /Users/grayudu/Downloads/sf.jpeg s3://<s3bucket>/
 - aws --profile <profile> s3api put-object-acl --bucket <s3bucket> --key sf.jpeg --acl public-read
-
+cd chef
+update attributes for s3 bucket details
+zip -r chef-0.1.0.zip * #get all cookbooks, recipes, roles and environments.
+aws --profile grayudu s3 cp chef-0.1.0.zip s3://<s3bucket>/
 ```
 
 
