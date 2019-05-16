@@ -42,7 +42,7 @@ aws --profile grayudu s3 cp chef-0.1.0.zip s3://<s3bucket>/
 ```
 ## Step 4 execute demo app
 - Creating ALB listener on 443, so ssl certificate has to be upload to IAM
-- Encrypt using aws KMS
+- Encrypt cert and key using aws KMS
 ```
 aws --profile <profile> kms encrypt --key-id <keyid> --plaintext fileb:///<path>/server.crt --output text --query CiphertextBlob > /tmp/server.crt
 aws --profile <profile> kms encrypt --key-id <keyid> --plaintext fileb:///<path>/server.key --output text --query CiphertextBlob > /tmp/server.key
