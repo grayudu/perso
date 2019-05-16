@@ -41,6 +41,15 @@ zip -r chef-0.1.0.zip * #get all cookbooks, recipes, roles and environments.
 aws --profile grayudu s3 cp chef-0.1.0.zip s3://<s3bucket>/
 ```
 ## Step 4 execute demo app
+- Creating ALB listener on 443, so ssl certificate has to be upload to IAM
+- Encrypt using aws KMS
+```
+aws --profile <profile> kms encrypt --key-id 374756f2-7ade-463f-a44a-76b67e77233c --plaintext fileb:///Users/grayudu/server.crt --output text --query CiphertextBlob > /tmp/server.crt
+aws --profile <profile> kms encrypt --key-id 374756f2-7ade-463f-a44a-76b67e77233c --plaintext fileb:///Users/grayudu/server.key --output text --query CiphertextBlob > /tmp/server.key
+
+```
+update path of encrypted ssl cert and key on ./demo/main.tf and also update bucketname in variables.tf
+
 ```hcl
 cd terraform/demo
 terraform init
