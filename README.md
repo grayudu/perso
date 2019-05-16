@@ -30,7 +30,7 @@ terraform apply #say yes when all resources listing correctly
 
 ## Step 3 Upload Chef cookbooks and image file to s3
 ```
-- aws --profile <profile> s3 cp /Users/grayudu/Downloads/sf.jpeg s3://<s3bucket>/
+- aws --profile <profile> s3 cp <path>/sf.jpeg s3://<s3bucket>/
 - aws --profile <profile> s3api put-object-acl --bucket <s3bucket> --key sf.jpeg --acl public-read
 ```
 upload chef
@@ -44,8 +44,8 @@ aws --profile grayudu s3 cp chef-0.1.0.zip s3://<s3bucket>/
 - Creating ALB listener on 443, so ssl certificate has to be upload to IAM
 - Encrypt using aws KMS
 ```
-aws --profile <profile> kms encrypt --key-id <keyid> --plaintext fileb:///Users/grayudu/server.crt --output text --query CiphertextBlob > /tmp/server.crt
-aws --profile <profile> kms encrypt --key-id <keyid> --plaintext fileb:///Users/grayudu/server.key --output text --query CiphertextBlob > /tmp/server.key
+aws --profile <profile> kms encrypt --key-id <keyid> --plaintext fileb:///<path>/server.crt --output text --query CiphertextBlob > /tmp/server.crt
+aws --profile <profile> kms encrypt --key-id <keyid> --plaintext fileb:///<path>/server.key --output text --query CiphertextBlob > /tmp/server.key
 
 ```
 update path of encrypted ssl cert and key on ./demo/main.tf and also update bucketname in variables.tf
