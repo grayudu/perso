@@ -192,14 +192,14 @@ module "ganga-elb" {
 data "aws_kms_secrets" "ganga-alb-cert" {
   "secret" {
     name    = "alb_cert"
-    payload = "${file("/tmp/server.crt")}"
+    payload = "${file("/tmp/server.crt_${var.region}")}"
   }
 }
 
 data "aws_kms_secrets" "ganga-alb-key" {
   "secret" {
     name    = "alb_key"
-    payload = "${file("/tmp/server.key")}"
+    payload = "${file("/tmp/server.key_${var.region}")}"
   }
 }
 
