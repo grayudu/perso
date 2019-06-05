@@ -19,7 +19,7 @@ EOF
 }
 
 resource "aws_iam_policy" "policy" {
- name = "s3-policy"
+ name = "s3-${var.name}"
  description = "A s3 policy"
  policy = <<EOF
 {
