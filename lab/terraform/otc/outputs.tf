@@ -13,15 +13,15 @@ output "aws_kms" {
   value       = "${aws_kms_key.a.id}"
 }
 
-#output "aws_rds" {
-#  description = "The RDS ID"
-#  value       = "${aws_db_instance.ganga_rds_mysql.endpoint}"
-#}
+output "aws_rds" {
+  description = "The RDS ID"
+  value       = "${aws_db_instance.ganga_rds_mysql.endpoint}"
+}
 
-#output "aws_rds_name" {
-#  description = "The RDS db name"
-#  value       = "${aws_db_instance.ganga_rds_mysql.name}"
-#}
+output "aws_rds_name" {
+  description = "The RDS db name"
+  value       = "${aws_db_instance.ganga_rds_mysql.name}"
+}
 
 
 # VPC

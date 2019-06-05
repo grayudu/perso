@@ -1,5 +1,5 @@
 #!/bin/sh
-region="us-east-1"
+region="_region_"
 profile="grayudu"
 s3_bucket="gangaapp-secret-101189138796-$region"
 encrypted=/tmp/data.enc
