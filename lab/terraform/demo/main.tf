@@ -89,7 +89,7 @@ module "sg" {
 module "iam" {
   source = "../modules/iam"
 
-  name = "${var.name}"
+  name = "${var.name}_${var.region}"
 }
 
 ######
@@ -204,7 +204,7 @@ data "aws_kms_secrets" "ganga-alb-key" {
 }
 
 resource "aws_iam_server_certificate" "ganga-cert" {
-  name             = "ganga-cert"
+  name             = "ganga-cert_${var.region}"
   certificate_body = "${data.aws_kms_secrets.ganga-alb-cert.plaintext["alb_cert"]}"
   private_key      = "${data.aws_kms_secrets.ganga-alb-key.plaintext["alb_key"]}"
 }
@@ -270,7 +270,7 @@ resource "aws_alb_listener" "alb_front_https" {
   port              = "443"
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-2016-08"
-  certificate_arn   = "${aws_iam_server_certificate.ganga-cert.arn}"
+  certificate_arn   = "${aws_iam_server_certificate.ganga-cert_${var.region}.arn}"
 
   default_action {
     target_group_arn = "${aws_alb_target_group.alb_front_https.arn}"
@@ -338,7 +338,7 @@ resource "null_resource" "lambdazip" {
 }
 
 resource "aws_iam_role" "lambda_role" {
-  name = "lambda_iam"
+  name = "lambda_iam_${var.region}"
 
   assume_role_policy = <<EOF
 {
@@ -375,7 +375,7 @@ resource "aws_cloudwatch_log_group" "asgscale" {
 
 # See also the following AWS managed policy: AWSLambdaBasicExecutionRole
 resource "aws_iam_policy" "lambda_logging" {
-  name        = "lambda_logging"
+  name        = "lambda_logging_${var.region}"
   path        = "/"
   description = "IAM policy for logging from a lambda"
 
@@ -409,9 +409,8 @@ EOF
 
 resource "aws_iam_role_policy_attachment" "lambda_logs" {
   role       = "${aws_iam_role.lambda_role.name}"
-  policy_arn = "${aws_iam_policy.lambda_logging.arn}"
+  policy_arn = "${aws_iam_policy.lambda_logging_${var.region}.arn}"
 }
-
 
 resource "aws_sns_topic" "scaleup" {
   name = "asg_scaleup"
@@ -433,7 +432,6 @@ resource "aws_sns_topic_subscription" "scaledown" {
   endpoint  = "${aws_lambda_function.asgloadmonitor.arn}"
 }
 
-
 resource "aws_lambda_permission" "with_sns_scaleup" {
   statement_id  = "AllowExecutionFromSNSup"
   action        = "lambda:InvokeFunction"
@@ -451,19 +449,19 @@ resource "aws_lambda_permission" "with_sns_scaledown" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "cloudwatch_metric_alarm_rpm_high" {
-  alarm_name          = "ganga-asgscale-alarm"
-  alarm_actions       = ["${aws_sns_topic.scaleup.arn}"]
-  ok_actions          = ["${aws_sns_topic.scaledown.arn}"]
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = "1"
-  metric_name         = "RequestCountPerTarget"
-  namespace           = "AWS/ApplicationELB"
-  statistic           = "Sum"
-  period              = "60"
-  threshold           = "40"
+  alarm_name                = "ganga-asgscale-alarm"
+  alarm_actions             = ["${aws_sns_topic.scaleup.arn}"]
+  ok_actions                = ["${aws_sns_topic.scaledown.arn}"]
+  comparison_operator       = "GreaterThanOrEqualToThreshold"
+  evaluation_periods        = "1"
+  metric_name               = "RequestCountPerTarget"
+  namespace                 = "AWS/ApplicationELB"
+  statistic                 = "Sum"
+  period                    = "60"
+  threshold                 = "40"
   insufficient_data_actions = []
 
   dimensions {
-    TargetGroup  = "${aws_alb_target_group.alb_front_https.arn_suffix}"
+    TargetGroup = "${aws_alb_target_group.alb_front_https.arn_suffix}"
   }
 }
