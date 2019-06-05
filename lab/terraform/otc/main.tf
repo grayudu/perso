@@ -126,40 +126,38 @@ resource "null_resource" "s3secret_ssl_upload" {
   provisioner "local-exec" {
     command = <<EOT
      aws --profile ${var.profile} --region ${var.region} kms encrypt --key-id ${aws_kms_key.a.key_id} --plaintext fileb://../../scripts/server.crt --output text --query CiphertextBlob | base64 --decode > /tmp/nginx_server_${var.region}.crt;
-     aws --profile ${var.profile} --region ${var.region} s3api put-object --bucket ${aws_s3_bucket.secret_bucket.id} --key nginx_server_${var.region}.crt --acl private --body /tmp/nginx_server.crt --output text --query 'None' | egrep -v '^None$' || true;
+     aws --profile ${var.profile} --region ${var.region} s3api put-object --bucket ${aws_s3_bucket.secret_bucket.id} --key nginx_server.crt --acl private --body /tmp/nginx_server_${var.region}.crt --output text --query 'None' | egrep -v '^None$' || true;
      aws --profile ${var.profile} --region ${var.region} kms encrypt --key-id ${aws_kms_key.a.key_id} --plaintext fileb://../../scripts/server.key --output text --query CiphertextBlob | base64 --decode > /tmp/nginx_server_${var.region}.key;
-     aws --profile ${var.profile} --region ${var.region} s3api put-object --bucket ${aws_s3_bucket.secret_bucket.id} --key nginx_server_${var.region}.key --acl private --body /tmp/nginx_server.key --output text --query 'None' | egrep -v '^None$' || true;
+     aws --profile ${var.profile} --region ${var.region} s3api put-object --bucket ${aws_s3_bucket.secret_bucket.id} --key nginx_server.key --acl private --body /tmp/nginx_server_${var.region}.key --output text --query 'None' | egrep -v '^None$' || true;
 
    EOT
   }
 }
 
- data "aws_kms_secrets" "ganga-rds-secret" {
-   "secret" {
-     name    = "master_password"
-     payload = "${file("/tmp/db_passwd_${var.region}")}"
-   }
- }
+data "aws_kms_secrets" "ganga-rds-secret" {
+  "secret" {
+    name    = "master_password"
+    payload = "${file("/tmp/db_passwd_${var.region}")}"
+  }
+}
 
-
- resource "aws_db_instance" "ganga_rds_mysql" {
-   allocated_storage           = 20
-   storage_type                = "gp2"
-   engine                      = "mysql"
-   engine_version              = "5.7"
-   instance_class              = "${var.db_instance}"
-   name                        = "${var.db_name}"
-   username                    = "admin"
-   password                    = "${data.aws_kms_secrets.ganga-rds-secret.plaintext["master_password"]}"
-   parameter_group_name        = "default.mysql5.7"
-   db_subnet_group_name        = "${aws_db_subnet_group.rds-subnet-group.name}"
-   vpc_security_group_ids      = ["${aws_security_group.rds-sg.id}"]
-   allow_major_version_upgrade = true
-   auto_minor_version_upgrade  = true
-   backup_retention_period     = 35
-   backup_window               = "22:00-23:00"
-   maintenance_window          = "Sat:00:00-Sat:03:00"
-   multi_az                    = true
-   skip_final_snapshot         = true
- }
-
+resource "aws_db_instance" "ganga_rds_mysql" {
+  allocated_storage           = 20
+  storage_type                = "gp2"
+  engine                      = "mysql"
+  engine_version              = "5.7"
+  instance_class              = "${var.db_instance}"
+  name                        = "${var.db_name}"
+  username                    = "admin"
+  password                    = "${data.aws_kms_secrets.ganga-rds-secret.plaintext["master_password"]}"
+  parameter_group_name        = "default.mysql5.7"
+  db_subnet_group_name        = "${aws_db_subnet_group.rds-subnet-group.name}"
+  vpc_security_group_ids      = ["${aws_security_group.rds-sg.id}"]
+  allow_major_version_upgrade = true
+  auto_minor_version_upgrade  = true
+  backup_retention_period     = 35
+  backup_window               = "22:00-23:00"
+  maintenance_window          = "Sat:00:00-Sat:03:00"
+  multi_az                    = true
+  skip_final_snapshot         = true
+}
