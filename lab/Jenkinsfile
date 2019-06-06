@@ -1,0 +1,131 @@
+pipeline {
+ agent any
+ stages{
+      stage('checkout') {
+          steps {
+            deleteDir()  
+            git credentialsId: 'github', url: 'https://github.com/grayudu/perso.git'
+          }
+      }
+      stage('Set Terraform path') {
+          steps {
+              script {
+                  def tfHome ="/usr/local/bin/"
+                  env.PATH = "${tfHome}:${env.PATH}"
+              }
+              sh 'terraform -version'
+          }
+      }
+      stage('Prerequisite') {
+          steps {
+              dir('lab/terraform/otc'){
+                  sh '''
+                     if [ $environment == "dev_useast2" ]; then
+                      region="us-east-2"
+                     elif [ $environment == "dev_useast1" ]; then
+                      region="us-east-1"
+                     fi
+                     sed -i -e "s/_region_/$region/g" remote-backend.tf
+                     sed -i -e "s/_region_/$region/g" ../demo/remote-backend.tf
+                     '''
+              }
+          }
+      } 
+      stage('Provision infrastructure') {
+          steps{
+            dir('lab/terraform/otc'){
+                //sh 'unlink variables.tf'
+                sh 'ln -s $environment variables.tf'
+                sh 'terraform init'
+                sh 'terraform plan -var="db_passwd=$db_passwd" -target=null_resource.enc_dbpasswd'
+                sh 'terraform apply -var="db_passwd=$db_passwd" -target=null_resource.enc_dbpasswd -auto-approve'
+                sh 'terraform plan -var="db_passwd=$db_passwd"'
+            }  
+          }
+      }
+      stage('Approval') {
+          steps {
+              script {
+                  def userInput = input(id: 'confirm', message: 'Apply Terraform?', parameters: [ [$class: 'BooleanParameterDefinition', defaultValue: false, description: 'Apply terraform', name: 'confirm'] ])
+              }
+          }
+      }
+      stage('Apply') {
+          steps {
+              dir('lab/terraform/otc'){
+                  sh 'terraform apply -var="db_passwd=$db_passwd" -auto-approve'
+              }
+          }
+      }
+      stage('DB Config') {
+          steps {
+              dir('lab/terraform/otc'){
+                  sh '''
+                     x=`terraform output -json | jq -r .aws_rds.value | cut -d':' -f1`
+                     sed -i -e "s/_dbhost_/$x/g" ../../scripts/config.py
+                     sed -i -e "s/_dbpasswd_/$db_passwd/g" ../../scripts/config.py
+                     if [ $environment == "dev_useast2" ]; then
+                      region="us-east-2"
+                     elif [ $environment == "dev_useast1" ]; then
+                      region="us-east-1"
+                     fi
+                     sed -i -e "s/_region_/$region/g" ../../scripts/secrets_upload.sh
+                     cd ../../scripts/
+                     chmod +x secrets_upload.sh
+                     ./secrets_upload.sh
+                     '''
+              }
+          }
+      }      
+      stage('Hosting application') {
+          steps{
+            dir('lab/terraform/demo'){
+                //sh 'unlink variables.tf'
+                sh 'ln -s $environment variables.tf'
+                sh 'terraform init'
+                sh 'terraform plan'
+            }  
+          }
+      }
+      stage('Hosting App Approval') {
+          steps {
+              script {
+                  def userInput = input(id: 'confirm', message: 'Apply Terraform?', parameters: [ [$class: 'BooleanParameterDefinition', defaultValue: false, description: 'Apply terraform', name: 'confirm'] ])
+              }
+          }
+      }
+      stage('Hosting App Apply') {
+          steps {
+              dir('lab/terraform/demo'){
+                  sh 'terraform apply -auto-approve'
+              }
+          }
+      }
+      stage('smoketest') {
+          steps {
+              dir('lab/terraform/demo'){
+                  sh """
+                   terraform output -json | jq -r .alb_dns_name.value > /tmp/endpoint
+                   cd ../../scripts/
+                   chmod +x smoketest.sh
+                   ./smoketest.sh
+                   """
+              }
+          }
+      }
+      stage('Destroy App Approval') {
+          steps {
+              script {
+                  def userInput = input(id: 'confirm', message: 'Apply Terraform?', parameters: [ [$class: 'BooleanParameterDefinition', defaultValue: false, description: 'Apply terraform', name: 'confirm'] ])
+              }
+          }
+      }
+      stage('destroy') {
+          steps {
+              dir('lab/terraform/demo') {
+                  sh 'terraform destroy -auto-approve'
+              }
+          }
+      }
+   }
+}
